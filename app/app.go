@@ -1,25 +1,31 @@
 package app
 
 import (
+	"context"
+	"database/sql"
 	"net/http"
 
-	"github.com/govnocods/RedChat/internal/database"
 	"github.com/govnocods/RedChat/internal/handlers"
 	"github.com/govnocods/RedChat/internal/middlewares"
+	"github.com/govnocods/RedChat/internal/repository"
+	"github.com/govnocods/RedChat/internal/service"
 )
 
 type App struct {
-	DB      *database.SQLDataBase
-	Router  *http.ServeMux
-	Handlers *handlers.Handlers
+	DB          *sql.DB
+	Router      *http.ServeMux
+	Handlers    *handlers.Handlers
 	Middlewares *middlewares.Middlewares
 }
 
-func NewApp(database *database.SQLDataBase) *App {
+func NewApp(database *sql.DB) *App {
+	userRepo := repository.NewUserRepository(database, context.Background())
+	userService := service.NewUserService(userRepo)
+
 	app := &App{
-		DB: database,
-		Router: http.NewServeMux(),
-		Handlers: handlers.NewHandlers(database),
+		DB:          database,
+		Router:      http.NewServeMux(),
+		Handlers:    handlers.NewHandlers(*userService),
 		Middlewares: middlewares.NewMiddlewares(database),
 	}
 

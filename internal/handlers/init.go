@@ -1,13 +1,15 @@
 package handlers
 
-import "github.com/govnocods/RedChat/internal/database"
+import (
+	"github.com/govnocods/RedChat/internal/service"
+)
 
 type Handlers struct {
-	DB *database.SQLDataBase
+	UserService service.UserService
 }
 
-func NewHandlers(database *database.SQLDataBase) *Handlers {
+func NewHandlers(userService service.UserService) *Handlers {
 	return &Handlers{
-		DB: database,
+		UserService: userService,
 	}
 }

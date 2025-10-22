@@ -12,7 +12,7 @@ type SQLDataBase struct {
 	db *sql.DB
 }
 
-func NewDatabase() *SQLDataBase {
+func NewDatabase() *sql.DB {
 	var err error
 	database, err := sql.Open("postgres", config.ConnStr)
 
@@ -26,5 +26,5 @@ func NewDatabase() *SQLDataBase {
 		fmt.Printf("Successful connection to DataBase")
 	}
 
-	return &SQLDataBase{db: database}
+	return database
 }

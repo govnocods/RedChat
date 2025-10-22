@@ -1,12 +1,12 @@
 package middlewares
 
-import "github.com/govnocods/RedChat/internal/database"
+import "database/sql"
 
 type Middlewares struct {
-	DB *database.SQLDataBase
+	DB *sql.DB
 }
 
-func NewMiddlewares(database *database.SQLDataBase) *Middlewares {
+func NewMiddlewares(database *sql.DB) *Middlewares {
 	return &Middlewares{
 		DB: database,
 	}

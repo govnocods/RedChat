@@ -12,7 +12,7 @@ type User struct {
 
 type Message struct {
 	Id        int    `json:"Id"`
-	SenderId  int    `json:"SenderId`
-	Content   any    `json:Content`
+	SenderId  int    `json:"SenderId"`
+	Content   any    `json:"Content"`
 	CreatedAt string `json:"CreatedAt"`
 }

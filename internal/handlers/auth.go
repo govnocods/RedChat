@@ -19,11 +19,6 @@ func (h *Handlers) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if h.DB == nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
@@ -32,7 +27,7 @@ func (h *Handlers) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	req.Password = string(hashedPassword)
 
-	h.DB.CreateUser(req)
+	h.UserService.RegisterUser(req.Username, req.Password)
 }
 
 func (h *Handlers) AuthHAndler(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +38,7 @@ func (h *Handlers) AuthHAndler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.DB.GetUser(req.Username)
+	user, err := h.UserService.Authenticate(req.Username, req.Password)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
