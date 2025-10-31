@@ -24,7 +24,7 @@ func (h *Handlers) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
 		return
 	}
-
+	
 	req.Password = string(hashedPassword)
 
 	h.UserService.RegisterUser(req.Username, req.Password)

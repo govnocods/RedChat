@@ -9,11 +9,13 @@ import (
 	"github.com/govnocods/RedChat/internal/middlewares"
 	"github.com/govnocods/RedChat/internal/repository"
 	"github.com/govnocods/RedChat/internal/service"
+	"github.com/govnocods/RedChat/internal/websocket"
 )
 
 type App struct {
 	DB          *sql.DB
 	Router      *http.ServeMux
+	Hub         *websocket.Hub
 	Handlers    *handlers.Handlers
 	Middlewares *middlewares.Middlewares
 }
@@ -22,9 +24,13 @@ func NewApp(database *sql.DB) *App {
 	userRepo := repository.NewUserRepository(database, context.Background())
 	userService := service.NewUserService(userRepo)
 
+	messageRepo := repository.NewMessageRepository()
+	messageService := service.NewMessageService(messageRepo)
+
 	app := &App{
 		DB:          database,
 		Router:      http.NewServeMux(),
+		Hub:         websocket.NewHub(messageService),
 		Handlers:    handlers.NewHandlers(*userService),
 		Middlewares: middlewares.NewMiddlewares(database),
 	}

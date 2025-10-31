@@ -13,5 +13,7 @@ func main() {
 
 	app := app.NewApp(database)
 
+	go app.Hub.Run()
+
 	http.ListenAndServe(":8080", app.Router)
 }
