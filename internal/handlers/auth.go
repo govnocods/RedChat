@@ -34,10 +34,9 @@ func (h *Handlers) AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.UserService.Authenticate(req.Username, req.Password)
 	if err != nil {
-		// Логируем для себя
+
 		fmt.Println("Auth error:", err)
 
-		// Обрабатываем конкретно
 		if errors.Is(err, sql.ErrNoRows) || strings.Contains(err.Error(), "invalid credentials") {
 			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 			return
@@ -46,14 +45,6 @@ func (h *Handlers) AuthHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
-
-	/*
-		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
-		if err != nil {
-			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
-			return
-		}
-	*/
 
 	token, err := auth.GenerateToken(user.Id, user.Username)
 	if err != nil {

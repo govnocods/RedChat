@@ -45,7 +45,6 @@ func (c *Client) ReadPump() {
 
 		finalMsg, _ := json.Marshal(msg)
 
-		// Рассылаем всем клиентам
 		c.Hub.Broadcast <- finalMsg
 	}
 }
