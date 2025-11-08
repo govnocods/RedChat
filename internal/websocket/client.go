@@ -1,9 +1,15 @@
 package websocket
 
-import "github.com/gorilla/websocket"
+import (
+	"encoding/json"
+	"log"
+
+	"github.com/gorilla/websocket"
+)
 
 type Client struct {
-	ID   string
+	ID   int
+	Username string
 	Hub  *Hub
 	Conn *websocket.Conn
 	Send chan []byte
@@ -20,7 +26,27 @@ func (c *Client) ReadPump() {
 		if err != nil {
 			break
 		}
-		c.Hub.Broadcast <- message
+
+		var msg map[string]any
+		if err := json.Unmarshal(message, &msg); err != nil {
+			log.Println("Invalid message JSON:", err)
+			continue
+		}
+
+		content, _ := msg["content"].(string)
+
+		err = c.Hub.messageService.SaveMessage(c.ID, []byte(content))
+		if err != nil {
+			log.Println("Failed to save message:", err)
+		}
+
+		msg["username"] = c.Username
+		msg["sender_id"] = c.ID
+
+		finalMsg, _ := json.Marshal(msg)
+
+		// Рассылаем всем клиентам
+		c.Hub.Broadcast <- finalMsg
 	}
 }
 
@@ -29,7 +55,7 @@ func (c *Client) WritePump() {
 
 	for {
 		select {
-		case message, ok := <- c.Send:
+		case message, ok := <-c.Send:
 			if !ok {
 				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return

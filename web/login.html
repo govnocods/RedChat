@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Вход — RedChat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-950 flex items-center justify-center min-h-screen">
+    <div
+      class="bg-gray-900 shadow-2xl rounded-2xl p-10 w-full max-w-md border border-gray-800"
+    >
+      <h1 class="text-3xl font-bold text-center text-red-500 mb-6">RedChat</h1>
+      <h2 class="text-xl text-gray-300 text-center mb-8">
+        Вход в аккаунт
+      </h2>
+
+      <form id="loginForm" class="space-y-5">
+        <div>
+          <label
+            for="username"
+            class="block text-gray-400 text-sm font-medium mb-1"
+            >Имя пользователя</label
+          >
+          <input
+            type="text"
+            id="username"
+            name="username"
+            required
+            class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:ring-2 focus:ring-red-500 focus:outline-none text-white"
+          />
+        </div>
+
+        <div>
+          <label
+            for="password"
+            class="block text-gray-400 text-sm font-medium mb-1"
+            >Пароль</label
+          >
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            class="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:ring-2 focus:ring-red-500 focus:outline-none text-white"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-all duration-200"
+        >
+          Войти
+        </button>
+      </form>
+
+      <p class="text-gray-500 text-center mt-6 text-sm">
+        Нет аккаунта?
+        <a href="/register" class="text-red-500 hover:underline"
+          >Зарегистрироваться</a
+        >
+      </p>
+
+      <p id="error" class="text-center text-red-500 mt-4 hidden"></p>
+    </div>
+
+    <script>
+  const form = document.getElementById("loginForm");
+  const errorBox = document.getElementById("error");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // 1. Собираем данные формы
+    const formData = new FormData(form);
+    const data = {};
+    for (let [key, value] of formData.entries()) {
+      data[key] = value;
+    }
+
+    // 2. Скрываем предыдущие ошибки
+    errorBox.classList.add("hidden");
+    errorBox.textContent = "";
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        // Указываем, что отправляем JSON
+        headers: {
+          "Content-Type": "application/json", 
+        },
+        // Преобразуем объект данных в строку JSON
+        body: JSON.stringify(data), 
+      });
+
+      if (res.ok) {
+        // ✅ Успешный вход
+        window.location.href = "/";
+      } else {
+        // ❌ Ошибка входа
+        const text = await res.text();
+        errorBox.textContent = text || "Ошибка входа";
+        errorBox.classList.remove("hidden");
+      }
+    } catch (err) {
+      console.error(err);
+      errorBox.textContent = "Ошибка сети";
+      errorBox.classList.remove("hidden");
+    }
+  });
+</script>
+  </body>
+</html>

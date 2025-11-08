@@ -10,13 +10,15 @@ import (
 var jwtSecret = []byte("super_secret_key")
 
 type Claims struct {
+	UserId   int
 	Username string
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(username string) (string, error) {
+func GenerateToken(userId int, username string) (string, error) {
 
 	claims := &Claims{
+		UserId:   userId,
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),

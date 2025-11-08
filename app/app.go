@@ -24,7 +24,7 @@ func NewApp(database *sql.DB) *App {
 	userRepo := repository.NewUserRepository(database, context.Background())
 	userService := service.NewUserService(userRepo)
 
-	messageRepo := repository.NewMessageRepository()
+	messageRepo := repository.NewMessageRepository(database)
 	messageService := service.NewMessageService(messageRepo)
 
 	app := &App{

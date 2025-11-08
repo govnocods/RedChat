@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>RedChat 💬</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body class="bg-gray-900 text-gray-100 h-screen flex">
+    <!-- Левая колонка -->
+    <aside class="w-1/4 bg-gray-800 border-r border-gray-700 flex flex-col">
+      <div class="flex items-center justify-between p-4 border-b border-gray-700">
+        <h1 class="text-xl font-bold text-red-400">RedChat</h1>
+        <button class="p-2 hover:bg-gray-700 rounded-lg">
+          <i data-lucide="user-plus" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Список чатов -->
+      <div id="chat-list" class="flex-1 overflow-y-auto">
+        <div
+          class="p-4 flex items-center gap-3 cursor-pointer hover:bg-gray-700 transition bg-gray-700"
+          id="general-chat"
+        >
+          <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center font-bold">
+            G
+          </div>
+          <div>
+            <p class="font-semibold">Генеральный чат</p>
+            <p class="text-gray-400 text-sm">Основной общий чат</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Профиль -->
+      <div class="p-4 border-t border-gray-700 flex items-center justify-between">
+        <span id="profileName" class="text-sm text-gray-300">Загрузка...</span>
+        <button id="logoutBtn" class="p-2 hover:bg-gray-700 rounded-lg">
+          <i data-lucide="log-out" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Основная часть -->
+    <main class="flex-1 flex flex-col">
+      <header class="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center font-bold">
+            G
+          </div>
+          <div>
+            <h2 class="font-semibold text-lg">Генеральный чат</h2>
+            <p class="text-sm text-gray-400">Онлайн: 12</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="p-2 hover:bg-gray-700 rounded-lg">
+            <i data-lucide="search" class="w-5 h-5"></i>
+          </button>
+          <button class="p-2 hover:bg-gray-700 rounded-lg">
+            <i data-lucide="more-vertical" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Сообщения -->
+      <div id="messages" class="flex-1 overflow-y-auto bg-gray-900 p-6 space-y-3"></div>
+
+      <!-- Поле ввода -->
+      <footer class="p-4 bg-gray-800 border-t border-gray-700 flex items-center gap-3">
+        <button class="p-2 hover:bg-gray-700 rounded-lg">
+          <i data-lucide="paperclip" class="w-5 h-5"></i>
+        </button>
+
+        <form id="messageForm" class="flex-1 flex items-center gap-3">
+          <input
+            id="messageInput"
+            type="text"
+            placeholder="Введите сообщение..."
+            class="flex-1 p-3 rounded-xl bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-red-500 focus:outline-none"
+            required
+          />
+          <button
+            type="submit"
+            class="bg-red-500 hover:bg-red-600 text-white p-3 rounded-xl flex items-center justify-center"
+          >
+            <i data-lucide="send" class="w-5 h-5"></i>
+          </button>
+        </form>
+      </footer>
+    </main>
+
+    <script>
+      lucide.createIcons();
+
+      // ---- Функции для токена ----
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+      }
+
+      function parseJwt(token) {
+        try {
+          const base64Url = token.split(".")[1];
+          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split("")
+              .map(function (c) {
+                return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+              })
+              .join("")
+          );
+          return JSON.parse(jsonPayload);
+        } catch {
+          return null;
+        }
+      }
+
+      // ---- Получаем имя пользователя из токена ----
+      const token = getCookie("jwt");
+      const decoded = parseJwt(token);
+      const username = decoded ? decoded.Username || decoded.username : "Гость";
+
+      document.getElementById("profileName").textContent = username;
+
+      // ---- Подключение WebSocket ----
+      const socket = new WebSocket("ws://localhost:8080/ws");
+
+      const form = document.getElementById("messageForm");
+      const input = document.getElementById("messageInput");
+      const messages = document.getElementById("messages");
+
+      socket.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+
+        const div = document.createElement("div");
+        div.classList.add("flex", "items-start", "gap-3");
+
+        div.innerHTML = `
+          <div class="w-9 h-9 bg-red-500 rounded-full flex items-center justify-center font-bold">
+            ${msg.username ? msg.username[0].toUpperCase() : "?"}
+          </div>
+          <div class="bg-gray-800 p-3 rounded-xl max-w-md">
+            <p class="font-semibold text-red-400">${msg.username}</p>
+            <p class="text-gray-200">${msg.content}</p>
+          </div>
+        `;
+
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+      };
+
+      // ---- Отправка сообщений ----
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const content = input.value.trim();
+        if (!content) return;
+        socket.send(JSON.stringify({ content, username }));
+        input.value = "";
+      });
+
+      // ---- Выход ----
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        document.cookie = "token=; Max-Age=0; path=/;";
+        window.location.href = "/login";
+      });
+    </script>
+  </body>
+</html>

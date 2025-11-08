@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/govnocods/RedChat/internal/auth"
 )
 
 var upgrader = websocket.Upgrader{
@@ -11,16 +12,28 @@ var upgrader = websocket.Upgrader{
 }
 
 func ServeWS(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("jwt")
+	if err != nil {
+		http.Error(w, "Missing auth token", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateToken(cookie.Value)
+	if err != nil {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
 	}
 
 	client := &Client{
+		ID: claims.UserId,
+		Username: claims.Username,
 		Hub: hub,
 		Conn: conn, 
 		Send: make(chan []byte),
-		ID: r.RemoteAddr,
 	}
 
 	hub.Register <- client
