@@ -2,8 +2,8 @@ package websocket
 
 import (
 	"encoding/json"
-	"log"
 
+	"github.com/govnocods/RedChat/internal/logger"
 	"github.com/govnocods/RedChat/internal/service"
 	"github.com/govnocods/RedChat/models"
 )
@@ -33,13 +33,21 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.Register:
 			h.Clients[client] = true
-			log.Println("Client connected:", client.ID)
+			logger.Info("Client connected",
+				"client_id", client.ID,
+				"username", client.Username,
+				"total_clients", len(h.Clients),
+			)
 
 		case client := <-h.Unregister:
 			if _, ok := h.Clients[client]; ok {
 				delete(h.Clients, client)
 				close(client.Send)
-				log.Println("Client disconnected:", client.ID)
+				logger.Info("Client disconnected",
+					"client_id", client.ID,
+					"username", client.Username,
+					"total_clients", len(h.Clients),
+				)
 
 			}
 
@@ -52,7 +60,7 @@ func (h *Hub) Run() {
 func (h *Hub) handleBroadcast(message []byte) {
 	var msg models.Message
 	if err := json.Unmarshal(message, &msg); err != nil {
-		log.Println("Invalid message:", err)
+		logger.WithError(err).Warn("Invalid message format in broadcast")
 		return
 	}
 

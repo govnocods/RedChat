@@ -2,17 +2,17 @@ package websocket
 
 import (
 	"encoding/json"
-	"log"
 
 	"github.com/gorilla/websocket"
+	"github.com/govnocods/RedChat/internal/logger"
 )
 
 type Client struct {
-	ID   int
+	ID       int
 	Username string
-	Hub  *Hub
-	Conn *websocket.Conn
-	Send chan []byte
+	Hub      *Hub
+	Conn     *websocket.Conn
+	Send     chan []byte
 }
 
 func (c *Client) ReadPump() {
@@ -29,21 +29,41 @@ func (c *Client) ReadPump() {
 
 		var msg map[string]any
 		if err := json.Unmarshal(message, &msg); err != nil {
-			log.Println("Invalid message JSON:", err)
+			logger.WithError(err).
+				With("client_id", c.ID).
+				With("username", c.Username).
+				Warn("Invalid message JSON")
 			continue
 		}
 
-		content, _ := msg["content"].(string)
+		content, ok := msg["content"].(string)
+		if !ok || content == "" {
+			logger.Warn("Invalid or missing content field",
+				"client_id", c.ID,
+				"username", c.Username,
+			)
+			continue
+		}
 
 		err = c.Hub.messageService.SaveMessage(c.ID, []byte(content))
 		if err != nil {
-			log.Println("Failed to save message:", err)
+			logger.WithError(err).
+				With("client_id", c.ID).
+				With("username", c.Username).
+				Error("Failed to save message")
 		}
 
 		msg["username"] = c.Username
 		msg["sender_id"] = c.ID
 
-		finalMsg, _ := json.Marshal(msg)
+		finalMsg, err := json.Marshal(msg)
+		if err != nil {
+			logger.WithError(err).
+				With("client_id", c.ID).
+				With("username", c.Username).
+				Error("Failed to marshal message")
+			continue
+		}
 
 		c.Hub.Broadcast <- finalMsg
 	}
@@ -59,7 +79,13 @@ func (c *Client) WritePump() {
 				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
-			c.Conn.WriteMessage(websocket.TextMessage, message)
+			if err := c.Conn.WriteMessage(websocket.TextMessage, message); err != nil {
+				logger.WithError(err).
+					With("client_id", c.ID).
+					With("username", c.Username).
+					Error("WebSocket write error")
+				return
+			}
 		}
 	}
 }

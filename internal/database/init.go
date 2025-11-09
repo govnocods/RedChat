@@ -2,10 +2,10 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
+	"os"
 
 	"github.com/govnocods/RedChat/config"
+	"github.com/govnocods/RedChat/internal/logger"
 )
 
 type SQLDataBase struct {
@@ -17,14 +17,16 @@ func NewDatabase() *sql.DB {
 	database, err := sql.Open("postgres", config.ConnStr)
 
 	if err != nil {
-		log.Fatal(err)
+		logger.WithError(err).Error("Failed to open database connection")
+		os.Exit(1)
 	}
 
 	if err = database.Ping(); err != nil {
-		log.Fatal(err)
-	} else {
-		fmt.Printf("Successful connection to DataBase")
+		logger.WithError(err).Error("Failed to ping database")
+		os.Exit(1)
 	}
+
+	logger.Info("Database connection established")
 
 	return database
 }

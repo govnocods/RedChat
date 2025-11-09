@@ -31,7 +31,7 @@ func NewApp(database *sql.DB) *App {
 		DB:          database,
 		Router:      http.NewServeMux(),
 		Hub:         websocket.NewHub(messageService),
-		Handlers:    handlers.NewHandlers(*userService),
+		Handlers:    handlers.NewHandlers(userService),
 		Middlewares: middlewares.NewMiddlewares(database),
 	}
 
