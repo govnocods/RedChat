@@ -2,93 +2,189 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RedChat 💬</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .message-animation {
+        animation: slideIn 0.3s ease-out;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(220, 38, 38, 0.1);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(220, 38, 38, 0.3);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(220, 38, 38, 0.5);
+      }
+      body {
+        background-color: #0a0e27;
+      }
+    </style>
   </head>
-  <body class="bg-gray-900 text-gray-100 h-screen flex">
-    <!-- Левая колонка -->
-    <aside class="w-1/4 bg-gray-800 border-r border-gray-700 flex flex-col">
-      <div class="flex items-center justify-between p-4 border-b border-gray-700">
-        <h1 class="text-xl font-bold text-red-400">RedChat</h1>
-        <button class="p-2 hover:bg-gray-700 rounded-lg">
-          <i data-lucide="user-plus" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <!-- Список чатов -->
-      <div id="chat-list" class="flex-1 overflow-y-auto">
-        <div
-          class="p-4 flex items-center gap-3 cursor-pointer hover:bg-gray-700 transition bg-gray-700"
-          id="general-chat"
-        >
-          <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center font-bold">
-            G
+  <body class="h-screen flex flex-col overflow-hidden">
+    <div class="flex flex-1 overflow-hidden">
+      <!-- Боковая панель -->
+      <aside class="w-80 bg-[#0f1422]/90 backdrop-blur-xl border-r border-red-900/30 flex flex-col shadow-2xl">
+        <!-- Заголовок боковой панели -->
+        <div class="p-6 border-b border-red-900/30">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/50">
+                <i data-lucide="message-circle" class="w-6 h-6 text-white"></i>
+              </div>
+              <h1 class="text-2xl font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+                RedChat
+              </h1>
+            </div>
+            <button 
+              id="newChatBtn"
+              class="p-2.5 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group"
+              title="Новый чат"
+            >
+              <i data-lucide="plus" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
+            </button>
           </div>
-          <div>
-            <p class="font-semibold">Генеральный чат</p>
-            <p class="text-gray-400 text-sm">Основной общий чат</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Профиль -->
-      <div class="p-4 border-t border-gray-700 flex items-center justify-between">
-        <span id="profileName" class="text-sm text-gray-300">Загрузка...</span>
-        <button id="logoutBtn" class="p-2 hover:bg-gray-700 rounded-lg">
-          <i data-lucide="log-out" class="w-5 h-5"></i>
-        </button>
-      </div>
-    </aside>
-
-    <!-- Основная часть -->
-    <main class="flex-1 flex flex-col">
-      <header class="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center font-bold">
-            G
-          </div>
-          <div>
-            <h2 class="font-semibold text-lg">Генеральный чат</h2>
-            <p class="text-sm text-gray-400">Онлайн: 12</p>
+          
+          <!-- Поиск -->
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i data-lucide="search" class="w-4 h-4 text-gray-500"></i>
+            </div>
+            <input
+              type="text"
+              placeholder="Поиск чатов..."
+              class="w-full pl-10 pr-4 py-2.5 bg-[#0a0e27]/60 border border-red-900/30 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600/50 transition-all duration-200"
+            />
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button class="p-2 hover:bg-gray-700 rounded-lg">
-            <i data-lucide="search" class="w-5 h-5"></i>
-          </button>
-          <button class="p-2 hover:bg-gray-700 rounded-lg">
-            <i data-lucide="more-vertical" class="w-5 h-5"></i>
-          </button>
-        </div>
-      </header>
 
-      <!-- Сообщения -->
-      <div id="messages" class="flex-1 overflow-y-auto bg-gray-900 p-6 space-y-3"></div>
-
-      <!-- Поле ввода -->
-      <footer class="p-4 bg-gray-800 border-t border-gray-700 flex items-center gap-3">
-        <button class="p-2 hover:bg-gray-700 rounded-lg">
-          <i data-lucide="paperclip" class="w-5 h-5"></i>
-        </button>
-
-        <form id="messageForm" class="flex-1 flex items-center gap-3">
-          <input
-            id="messageInput"
-            type="text"
-            placeholder="Введите сообщение..."
-            class="flex-1 p-3 rounded-xl bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-red-500 focus:outline-none"
-            required
-          />
-          <button
-            type="submit"
-            class="bg-red-500 hover:bg-red-600 text-white p-3 rounded-xl flex items-center justify-center"
+        <!-- Список чатов -->
+        <div id="chat-list" class="flex-1 overflow-y-auto p-3 space-y-2">
+          <div
+            class="p-4 flex items-center gap-3 cursor-pointer hover:bg-red-900/20 rounded-xl transition-all duration-200 bg-red-900/10 border border-red-900/30 group"
+            id="general-chat"
           >
-            <i data-lucide="send" class="w-5 h-5"></i>
-          </button>
-        </form>
-      </footer>
-    </main>
+            <div class="relative">
+              <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-red-900/50 group-hover:scale-110 transition-transform duration-200">
+                <i data-lucide="users" class="w-6 h-6"></i>
+              </div>
+              <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-[#0a0e27] rounded-full"></span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-white truncate">Генеральный чат</p>
+              <p class="text-gray-400 text-sm truncate">Основной общий чат</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Профиль пользователя -->
+        <div class="p-4 border-t border-red-900/30 bg-[#0a0e27]/40">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-red-900/50">
+                <span id="profileInitial" class="text-sm">?</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p id="profileName" class="font-medium text-white text-sm truncate">Загрузка...</p>
+              </div>
+            </div>
+            <button 
+              id="logoutBtn" 
+              class="p-2.5 hover:bg-red-900/30 rounded-xl transition-colors duration-200 group ml-2"
+              title="Выход"
+            >
+              <i data-lucide="log-out" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Основная область чата -->
+      <main class="flex-1 flex flex-col bg-[#0f1422]/60 backdrop-blur-xl">
+        <!-- Заголовок чата -->
+        <header class="p-4 border-b border-red-900/30 bg-[#0a0e27]/40 backdrop-blur-sm flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="relative">
+              <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/50">
+                <i data-lucide="users" class="w-6 h-6 text-white"></i>
+              </div>
+            </div>
+            <div>
+              <h2 class="font-semibold text-lg text-white">Генеральный чат</h2>
+              <p class="text-sm text-gray-400 flex items-center gap-2">
+                <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                Онлайн: 12
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button 
+              class="p-2.5 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group"
+              title="Поиск"
+            >
+              <i data-lucide="search" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
+            </button>
+            <button 
+              class="p-2.5 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group"
+              title="Настройки"
+            >
+              <i data-lucide="more-vertical" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
+            </button>
+          </div>
+        </header>
+
+        <!-- Область сообщений -->
+        <div id="messages" class="flex-1 overflow-y-auto bg-gradient-to-b from-transparent to-[#0a0e27]/40 p-6 space-y-3"></div>
+
+        <!-- Поле ввода сообщения -->
+        <footer class="p-4 border-t border-red-900/30 bg-[#0a0e27]/40 backdrop-blur-sm">
+          <form id="messageForm" class="flex items-center gap-3">
+            <button 
+              type="button"
+              class="p-3 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group flex-shrink-0"
+              title="Прикрепить файл"
+            >
+              <i data-lucide="paperclip" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
+            </button>
+            
+            <input
+              id="messageInput"
+              type="text"
+              placeholder="Введите сообщение..."
+              class="flex-1 p-3 rounded-xl bg-[#0f1422]/60 border border-red-900/30 focus:ring-2 focus:ring-red-600 focus:outline-none text-white placeholder-gray-500 transition-all duration-200"
+              required
+            />
+            
+            <button
+              type="submit"
+              class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white p-3 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/50 hover:shadow-xl hover:shadow-red-900/60 transform hover:scale-105 active:scale-95 transition-all duration-200 flex-shrink-0"
+              title="Отправить"
+            >
+              <i data-lucide="send" class="w-5 h-5"></i>
+            </button>
+          </form>
+        </footer>
+      </main>
+    </div>
 
     <script>
       lucide.createIcons();
@@ -124,6 +220,7 @@
       const username = decoded ? decoded.Username || decoded.username : "Гость";
 
       document.getElementById("profileName").textContent = username;
+      document.getElementById("profileInitial").textContent = username[0].toUpperCase();
 
       // ---- Подключение WebSocket ----
       const socket = new WebSocket("ws://localhost:8080/ws");
@@ -136,15 +233,17 @@
         const msg = JSON.parse(event.data);
 
         const div = document.createElement("div");
-        div.classList.add("flex", "items-start", "gap-3");
+        div.classList.add("flex", "items-start", "gap-3", "message-animation");
 
         div.innerHTML = `
-          <div class="w-9 h-9 bg-red-500 rounded-full flex items-center justify-center font-bold">
+          <div class="w-9 h-9 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-red-900/50 flex-shrink-0">
             ${msg.username ? msg.username[0].toUpperCase() : "?"}
           </div>
-          <div class="bg-gray-800 p-3 rounded-xl max-w-md">
-            <p class="font-semibold text-red-400">${msg.username}</p>
-            <p class="text-gray-200">${msg.content}</p>
+          <div class="flex-1">
+            <div class="bg-[#0f1422]/80 backdrop-blur-sm border border-red-900/30 text-white p-3 rounded-xl rounded-tl-none shadow-lg max-w-md">
+              <p class="text-red-400 font-medium text-sm mb-1">${msg.username}</p>
+              <p class="text-gray-100">${msg.content}</p>
+            </div>
           </div>
         `;
 
@@ -163,7 +262,7 @@
 
       // ---- Выход ----
       document.getElementById("logoutBtn").addEventListener("click", () => {
-        document.cookie = "token=; Max-Age=0; path=/;";
+        document.cookie = "jwt=; Max-Age=0; path=/;";
         window.location.href = "/login";
       });
     </script>

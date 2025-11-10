@@ -9,6 +9,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type UserServiceI interface {
+	RegisterUser(username, password string) (*models.User, error)
+	Authenticate(username, password string) (*models.User, error)
+}
+
 type UserService struct {
 	repo repository.UserRepositoryI
 }
@@ -47,7 +52,7 @@ func (s *UserService) Authenticate(username, password string) (*models.User, err
 	}
 
 	if user == nil {
-		return nil, errors.New("invalid credentials") 
+		return nil, errors.New("invalid credentials")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))

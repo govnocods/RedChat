@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Вход — RedChat</title>
+    <title>Регистрация — RedChat</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -40,16 +40,16 @@
         <!-- Логотип и заголовок -->
         <div class="text-center mb-8">
           <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl mb-4 shadow-lg shadow-red-900/50">
-            <i data-lucide="message-circle" class="w-8 h-8 text-white"></i>
+            <i data-lucide="user-plus" class="w-8 h-8 text-white"></i>
           </div>
           <h1 class="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
             RedChat
           </h1>
-          <p class="text-gray-300 text-sm">Добро пожаловать обратно!</p>
+          <p class="text-gray-300 text-sm">Создайте новый аккаунт</p>
         </div>
 
-        <!-- Форма входа -->
-        <form id="loginForm" class="space-y-6">
+        <!-- Форма регистрации -->
+        <form id="registerForm" class="space-y-6">
           <!-- Имя пользователя -->
           <div>
             <label for="username" class="block text-gray-200 text-sm font-medium mb-2 flex items-center gap-2">
@@ -92,13 +92,13 @@
             </div>
           </div>
 
-          <!-- Кнопка входа -->
+          <!-- Кнопка регистрации -->
           <button
             type="submit"
             class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-red-900/50 hover:shadow-xl hover:shadow-red-900/60 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
           >
-            <i data-lucide="log-in" class="w-5 h-5"></i>
-            <span>Войти</span>
+            <i data-lucide="user-plus" class="w-5 h-5"></i>
+            <span>Зарегистрироваться</span>
           </button>
         </form>
 
@@ -108,12 +108,12 @@
           <span id="errorText"></span>
         </div>
 
-        <!-- Ссылка на регистрацию -->
+        <!-- Ссылка на вход -->
         <div class="mt-6 text-center">
           <p class="text-gray-400 text-sm">
-            Нет аккаунта?
-            <a href="/register" class="text-red-500 hover:text-red-400 font-medium transition-colors duration-200 inline-flex items-center gap-1">
-              Зарегистрироваться
+            Уже есть аккаунт?
+            <a href="/login" class="text-red-500 hover:text-red-400 font-medium transition-colors duration-200 inline-flex items-center gap-1">
+              Войти
               <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
           </p>
@@ -130,7 +130,7 @@
     <script>
       lucide.createIcons();
 
-      const form = document.getElementById("loginForm");
+      const form = document.getElementById("registerForm");
       const errorBox = document.getElementById("error");
       const errorText = document.getElementById("errorText");
 
@@ -148,7 +148,7 @@
             data[key] = value;
           }
 
-          const res = await fetch("/api/login", {
+          const res = await fetch("/api/register", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -157,12 +157,12 @@
           });
 
           if (res.ok) {
-            // ✅ Успешный вход
-            window.location.href = "/";
+            // ✅ Успешная регистрация
+            window.location.href = "/login";
           } else {
-            // ❌ Ошибка входа
+            // ❌ Ошибка регистрации
             const text = await res.text();
-            errorText.textContent = text || "Ошибка входа";
+            errorText.textContent = text || "Ошибка регистрации";
             errorBox.classList.remove("hidden");
           }
         } catch (err) {
