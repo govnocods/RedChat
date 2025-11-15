@@ -32,7 +32,7 @@ func NewApp(database *sql.DB) *App {
 		Router:      http.NewServeMux(),
 		Hub:         websocket.NewHub(messageService),
 		Handlers:    handlers.NewHandlers(userService),
-		Middlewares: middlewares.NewMiddlewares(database),
+		Middlewares: middlewares.NewMiddlewares(),
 	}
 
 	app.routes()

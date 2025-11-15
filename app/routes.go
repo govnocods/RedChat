@@ -7,6 +7,7 @@ import (
 )
 
 func (a *App) routes() {
+	// Публичные маршруты (без аутентификации)
 	a.Router.HandleFunc("/api/register", a.Handlers.RegisterHandler)
 	a.Router.HandleFunc("/api/login", a.Handlers.AuthHandler)
 
@@ -18,11 +19,14 @@ func (a *App) routes() {
 		http.ServeFile(w, r, "./web/register.html")
 	})
 
-	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// Защищенные маршруты (требуют аутентификации)
+	chatHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./web/chat.html")
 	})
+	a.Router.Handle("/", a.Middlewares.AuthMiddleware(chatHandler))
 
-	a.Router.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	wsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		websocket.ServeWS(a.Hub, w, r)
 	})
+	a.Router.Handle("/ws", a.Middlewares.AuthMiddleware(wsHandler))
 }
