@@ -150,6 +150,7 @@
 
           const res = await fetch("/api/login", {
             method: "POST",
+            credentials: "include", // ОБЯЗАТЕЛЬНО для cookie
             headers: {
               "Content-Type": "application/json",
             },
@@ -157,7 +158,8 @@
           });
 
           if (res.ok) {
-            // ✅ Успешный вход
+            // ✅ Успешный вход - сразу делаем редирект
+            // Cookie устанавливается браузером автоматически
             window.location.href = "/";
           } else {
             // ❌ Ошибка входа

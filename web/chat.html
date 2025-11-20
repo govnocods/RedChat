@@ -38,30 +38,64 @@
       body {
         background-color: #0a0e27;
       }
+      @media (max-width: 768px) {
+        .sidebar-mobile {
+          transform: translateX(-100%);
+          transition: transform 0.3s ease-in-out;
+        }
+        .sidebar-mobile.open {
+          transform: translateX(0);
+        }
+      }
+      i[data-lucide="chevron-left"] {
+        transition: transform 0.3s ease-in-out;
+      }
+      i[data-lucide="chevron-left"] {
+        transition: transform 0.3s ease-in-out;
+      }
     </style>
   </head>
   <body class="h-screen flex flex-col overflow-hidden">
+    <!-- Overlay для закрытия боковой панели на мобильных -->
+    <div 
+      id="sidebarOverlay"
+      class="md:hidden fixed inset-0 bg-black/50 z-40 hidden"
+    ></div>
+
     <div class="flex flex-1 overflow-hidden">
       <!-- Боковая панель -->
-      <aside class="w-80 bg-[#0f1422]/90 backdrop-blur-xl border-r border-red-900/30 flex flex-col shadow-2xl">
+      <aside 
+        id="sidebar"
+        class="sidebar-mobile fixed md:static inset-y-0 left-0 z-40 w-80 bg-[#0f1422]/95 md:bg-[#0f1422]/90 backdrop-blur-xl border-r border-red-900/30 flex flex-col shadow-2xl"
+      >
         <!-- Заголовок боковой панели -->
-        <div class="p-6 border-b border-red-900/30">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/50">
-                <i data-lucide="message-circle" class="w-6 h-6 text-white"></i>
+        <div class="p-4 md:p-6 border-b border-red-900/30">
+          <div class="flex items-center justify-between mb-3 md:mb-4">
+            <div class="flex items-center gap-2 md:gap-3">
+              <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/50">
+                <i data-lucide="message-circle" class="w-5 h-5 md:w-6 md:h-6 text-white"></i>
               </div>
-              <h1 class="text-2xl font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+              <h1 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
                 RedChat
               </h1>
             </div>
-            <button 
-              id="newChatBtn"
-              class="p-2.5 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group"
-              title="Новый чат"
-            >
-              <i data-lucide="plus" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
-            </button>
+            <div class="flex items-center gap-2">
+              <!-- Кнопка закрытия на мобильных -->
+              <button 
+                id="sidebarClose"
+                class="md:hidden p-2 hover:bg-red-900/20 rounded-xl transition-colors duration-200"
+                title="Закрыть"
+              >
+                <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
+              </button>
+              <button 
+                id="newChatBtn"
+                class="hidden md:block p-2.5 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group"
+                title="Новый чат"
+              >
+                <i data-lucide="plus" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
+              </button>
+            </div>
           </div>
           
           <!-- Поиск -->
@@ -72,95 +106,105 @@
             <input
               type="text"
               placeholder="Поиск чатов..."
-              class="w-full pl-10 pr-4 py-2.5 bg-[#0a0e27]/60 border border-red-900/30 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600/50 transition-all duration-200"
+              class="w-full pl-10 pr-4 py-2 md:py-2.5 bg-[#0a0e27]/60 border border-red-900/30 rounded-xl text-white placeholder-gray-500 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600/50 transition-all duration-200"
             />
           </div>
         </div>
 
         <!-- Список чатов -->
-        <div id="chat-list" class="flex-1 overflow-y-auto p-3 space-y-2">
+        <div id="chat-list" class="flex-1 overflow-y-auto p-2 md:p-3 space-y-2">
           <div
-            class="p-4 flex items-center gap-3 cursor-pointer hover:bg-red-900/20 rounded-xl transition-all duration-200 bg-red-900/10 border border-red-900/30 group"
+            class="p-3 md:p-4 flex items-center gap-2 md:gap-3 cursor-pointer hover:bg-red-900/20 active:bg-red-900/30 rounded-xl transition-all duration-200 bg-red-900/10 border border-red-900/30 group chat-item"
             id="general-chat"
+            data-chat-name="Генеральный чат"
+            data-chat-name="Генеральный чат"
           >
             <div class="relative">
-              <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-red-900/50 group-hover:scale-110 transition-transform duration-200">
-                <i data-lucide="users" class="w-6 h-6"></i>
+              <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-red-900/50 group-hover:scale-110 transition-transform duration-200">
+                <i data-lucide="users" class="w-5 h-5 md:w-6 md:h-6"></i>
               </div>
-              <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-[#0a0e27] rounded-full"></span>
+              <span class="absolute -top-1 -right-1 w-3 h-3 md:w-4 md:h-4 bg-red-500 border-2 border-[#0a0e27] rounded-full"></span>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="font-semibold text-white truncate">Генеральный чат</p>
-              <p class="text-gray-400 text-sm truncate">Основной общий чат</p>
+              <p class="font-semibold text-white text-sm md:text-base truncate">Генеральный чат</p>
+              <p class="text-gray-400 text-xs md:text-sm truncate hidden md:block">Основной общий чат</p>
             </div>
           </div>
         </div>
 
         <!-- Профиль пользователя -->
-        <div class="p-4 border-t border-red-900/30 bg-[#0a0e27]/40">
+        <div class="p-3 md:p-4 border-t border-red-900/30 bg-[#0a0e27]/40">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3 flex-1 min-w-0">
-              <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-red-900/50">
-                <span id="profileInitial" class="text-sm">?</span>
+            <div class="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+              <div class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-red-900/50">
+                <span id="profileInitial" class="text-xs md:text-sm">?</span>
               </div>
               <div class="flex-1 min-w-0">
-                <p id="profileName" class="font-medium text-white text-sm truncate">Загрузка...</p>
+                <p id="profileName" class="font-medium text-white text-xs md:text-sm truncate">Загрузка...</p>
               </div>
             </div>
             <button 
               id="logoutBtn" 
-              class="p-2.5 hover:bg-red-900/30 rounded-xl transition-colors duration-200 group ml-2"
+              class="p-2 md:p-2.5 hover:bg-red-900/30 rounded-xl transition-colors duration-200 group ml-2"
               title="Выход"
             >
-              <i data-lucide="log-out" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
+              <i data-lucide="log-out" class="w-4 h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
             </button>
           </div>
         </div>
       </aside>
 
       <!-- Основная область чата -->
-      <main class="flex-1 flex flex-col bg-[#0f1422]/60 backdrop-blur-xl">
+      <main class="flex-1 flex flex-col bg-[#0f1422]/60 backdrop-blur-xl w-full">
         <!-- Заголовок чата -->
-        <header class="p-4 border-b border-red-900/30 bg-[#0a0e27]/40 backdrop-blur-sm flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="relative">
-              <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/50">
-                <i data-lucide="users" class="w-6 h-6 text-white"></i>
+        <header class="p-3 md:p-4 border-b border-red-900/30 bg-[#0a0e27]/40 backdrop-blur-sm flex items-center justify-between md:pl-4">
+          <div class="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
+            <!-- Кнопка-стрелка для открытия списка чатов -->
+            <button
+              id="sidebarToggle"
+              class="p-1.5 md:p-2 hover:bg-red-900/20 rounded-lg transition-colors duration-200 group flex-shrink-0 -ml-1 md:ml-0"
+              title="Список чатов"
+            >
+              <i data-lucide="chevron-left" class="w-5 h-5 md:w-6 md:h-6 text-gray-400 group-hover:text-red-400 transition-colors rotate-0 md:rotate-0"></i>
+            </button>
+            <div class="relative flex-shrink-0">
+              <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/50 cursor-pointer hover:scale-105 transition-transform duration-200">
+                <i data-lucide="users" class="w-5 h-5 md:w-6 md:h-6 text-white"></i>
               </div>
             </div>
-            <div>
-              <h2 class="font-semibold text-lg text-white">Генеральный чат</h2>
-              <p class="text-sm text-gray-400 flex items-center gap-2">
-                <span class="w-2 h-2 bg-red-500 rounded-full"></span>
-                Онлайн: 12
+            <div class="flex-1 min-w-0 cursor-pointer" id="chatHeaderInfo">
+              <h2 class="font-semibold text-base md:text-lg text-white truncate">Генеральный чат</h2>
+              <p class="text-xs md:text-sm text-gray-400 flex items-center gap-2">
+                <span class="w-1.5 h-1.5 md:w-2 md:h-2 bg-red-500 rounded-full flex-shrink-0"></span>
+                <span class="truncate">Онлайн: 12</span>
               </p>
             </div>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1 md:gap-2 flex-shrink-0">
             <button 
-              class="p-2.5 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group"
+              class="hidden md:block p-2.5 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group"
               title="Поиск"
             >
               <i data-lucide="search" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
             </button>
             <button 
-              class="p-2.5 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group"
+              class="p-2 md:p-2.5 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group"
               title="Настройки"
             >
-              <i data-lucide="more-vertical" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
+              <i data-lucide="more-vertical" class="w-4 h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
             </button>
           </div>
         </header>
 
         <!-- Область сообщений -->
-        <div id="messages" class="flex-1 overflow-y-auto bg-gradient-to-b from-transparent to-[#0a0e27]/40 p-6 space-y-3"></div>
+        <div id="messages" class="flex-1 overflow-y-auto bg-gradient-to-b from-transparent to-[#0a0e27]/40 p-3 md:p-6 space-y-2 md:space-y-3"></div>
 
         <!-- Поле ввода сообщения -->
-        <footer class="p-4 border-t border-red-900/30 bg-[#0a0e27]/40 backdrop-blur-sm">
-          <form id="messageForm" class="flex items-center gap-3">
+        <footer class="p-2 md:p-4 border-t border-red-900/30 bg-[#0a0e27]/40 backdrop-blur-sm safe-area-inset-bottom">
+          <form id="messageForm" class="flex items-center gap-2 md:gap-3">
             <button 
               type="button"
-              class="p-3 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group flex-shrink-0"
+              class="hidden md:block p-3 hover:bg-red-900/20 rounded-xl transition-colors duration-200 group flex-shrink-0"
               title="Прикрепить файл"
             >
               <i data-lucide="paperclip" class="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors"></i>
@@ -170,16 +214,16 @@
               id="messageInput"
               type="text"
               placeholder="Введите сообщение..."
-              class="flex-1 p-3 rounded-xl bg-[#0f1422]/60 border border-red-900/30 focus:ring-2 focus:ring-red-600 focus:outline-none text-white placeholder-gray-500 transition-all duration-200"
+              class="flex-1 p-2.5 md:p-3 rounded-xl bg-[#0f1422]/60 border border-red-900/30 focus:ring-2 focus:ring-red-600 focus:outline-none text-white placeholder-gray-500 text-sm md:text-base transition-all duration-200"
               required
             />
             
             <button
               type="submit"
-              class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white p-3 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/50 hover:shadow-xl hover:shadow-red-900/60 transform hover:scale-105 active:scale-95 transition-all duration-200 flex-shrink-0"
+              class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white p-2.5 md:p-3 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/50 hover:shadow-xl hover:shadow-red-900/60 transform hover:scale-105 active:scale-95 transition-all duration-200 flex-shrink-0"
               title="Отправить"
             >
-              <i data-lucide="send" class="w-5 h-5"></i>
+              <i data-lucide="send" class="w-4 h-4 md:w-5 md:h-5"></i>
             </button>
           </form>
         </footer>
@@ -215,40 +259,120 @@
       }
 
       // ---- Получаем имя пользователя из токена ----
+      // Middleware уже проверил авторизацию, если мы здесь - значит авторизованы
       const token = getCookie("jwt");
-      const decoded = parseJwt(token);
-      const username = decoded ? decoded.Username || decoded.username : "Гость";
+      let username = "Гость";
+      
+      if (token) {
+        const decoded = parseJwt(token);
+        if (decoded) {
+          username = decoded.Username || decoded.username || "Гость";
+        }
+      }
 
       document.getElementById("profileName").textContent = username;
       document.getElementById("profileInitial").textContent = username[0].toUpperCase();
-
-      // ---- Подключение WebSocket ----
-      const socket = new WebSocket("ws://localhost:8080/ws");
 
       const form = document.getElementById("messageForm");
       const input = document.getElementById("messageInput");
       const messages = document.getElementById("messages");
 
-      socket.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
+      // ---- Функция для отображения сообщения ----
+      function displayMessage(msg) {
+        // Поддержка разных форматов:
+        // WebSocket: {username, content}
+        // API: {Username, Content}
+        const msgUsername = msg.username || msg.Username || "Неизвестно";
+        const msgContent = msg.content || msg.Content || "";
 
         const div = document.createElement("div");
         div.classList.add("flex", "items-start", "gap-3", "message-animation");
 
         div.innerHTML = `
-          <div class="w-9 h-9 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-red-900/50 flex-shrink-0">
-            ${msg.username ? msg.username[0].toUpperCase() : "?"}
+          <div class="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-red-900/50 flex-shrink-0 text-xs md:text-sm">
+            ${msgUsername[0] ? msgUsername[0].toUpperCase() : "?"}
           </div>
-          <div class="flex-1">
-            <div class="bg-[#0f1422]/80 backdrop-blur-sm border border-red-900/30 text-white p-3 rounded-xl rounded-tl-none shadow-lg max-w-md">
-              <p class="text-red-400 font-medium text-sm mb-1">${msg.username}</p>
-              <p class="text-gray-100">${msg.content}</p>
+          <div class="flex-1 min-w-0">
+            <div class="bg-[#0f1422]/80 backdrop-blur-sm border border-red-900/30 text-white p-2.5 md:p-3 rounded-xl rounded-tl-none shadow-lg max-w-[85%] md:max-w-md">
+              <p class="text-red-400 font-medium text-xs md:text-sm mb-0.5 md:mb-1 truncate">${msgUsername}</p>
+              <p class="text-gray-100 text-sm md:text-base break-words">${msgContent}</p>
             </div>
           </div>
         `;
 
         messages.appendChild(div);
         messages.scrollTop = messages.scrollHeight;
+      }
+
+      // ---- Загрузка истории сообщений при загрузке страницы ----
+      async function loadMessages() {
+        try {
+          const response = await fetch("/api/messages?limit=50", {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          // Если получили 401 (Unauthorized) - перенаправляем на логин
+          if (response.status === 401) {
+            document.cookie = "jwt=; Max-Age=0; path=/;";
+            window.location.href = "/login";
+            return;
+          }
+
+          if (!response.ok) {
+            console.error("Failed to load messages:", response.status);
+            return;
+          }
+
+          const messagesData = await response.json();
+          
+          // Очищаем контейнер перед загрузкой
+          messages.innerHTML = "";
+
+          // Отображаем сообщения
+          if (Array.isArray(messagesData)) {
+            messagesData.forEach((msg) => {
+              displayMessage(msg);
+            });
+          }
+        } catch (error) {
+          console.error("Error loading messages:", error);
+        }
+      }
+
+      // Загружаем сообщения при загрузке страницы
+      loadMessages();
+
+      // ---- Подключение WebSocket ----
+      const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const socket = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
+
+      socket.onopen = () => {
+        console.log("WebSocket connected");
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+      socket.onclose = (event) => {
+        // Код 1008 = Policy Violation (обычно используется для неавторизованных пользователей)
+        // Код 1002 = Protocol Error (может быть при проблемах с авторизацией)
+        if (event.code === 1008 || event.code === 1002) {
+          document.cookie = "jwt=; Max-Age=0; path=/;";
+          window.location.href = "/login";
+        } else if (event.code !== 1000) {
+          // 1000 = Normal Closure (нормальное закрытие)
+          console.log("WebSocket closed:", event.code, event.reason);
+        }
+      };
+
+      socket.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        displayMessage(msg);
       };
 
       // ---- Отправка сообщений ----
@@ -265,6 +389,80 @@
         document.cookie = "jwt=; Max-Age=0; path=/;";
         window.location.href = "/login";
       });
+
+      // ---- Управление боковой панелью ----
+      const sidebar = document.getElementById("sidebar");
+      const sidebarToggle = document.getElementById("sidebarToggle");
+      const sidebarClose = document.getElementById("sidebarClose");
+      const sidebarOverlay = document.getElementById("sidebarOverlay");
+      const chatHeaderInfo = document.getElementById("chatHeaderInfo");
+      const chevronIcon = sidebarToggle?.querySelector("i");
+
+      function openSidebar() {
+        sidebar.classList.add("open");
+        sidebarOverlay.classList.remove("hidden");
+        // Поворачиваем стрелку при открытии
+        if (chevronIcon) {
+          chevronIcon.style.transform = "rotate(180deg)";
+        }
+      }
+
+      function closeSidebar() {
+        sidebar.classList.remove("open");
+        sidebarOverlay.classList.add("hidden");
+        // Возвращаем стрелку в исходное положение
+        if (chevronIcon) {
+          chevronIcon.style.transform = "rotate(0deg)";
+        }
+      }
+
+      // Открываем/закрываем боковую панель по клику на стрелку
+      sidebarToggle?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (sidebar.classList.contains("open")) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
+      });
+
+      // Открываем боковую панель при клике на заголовок чата на мобильных
+      chatHeaderInfo?.addEventListener("click", () => {
+        if (window.innerWidth < 768 && !sidebar.classList.contains("open")) {
+          openSidebar();
+        }
+      });
+
+      sidebarClose?.addEventListener("click", closeSidebar);
+      sidebarOverlay?.addEventListener("click", closeSidebar);
+
+      // Закрываем боковую панель при выборе чата
+      document.querySelectorAll(".chat-item").forEach((item) => {
+        item.addEventListener("click", () => {
+          const chatName = item.getAttribute("data-chat-name");
+          if (chatName) {
+            // Обновляем заголовок чата
+            const headerTitle = document.querySelector("header h2");
+            if (headerTitle) {
+              headerTitle.textContent = chatName;
+            }
+            // Закрываем боковую панель на мобильных
+            if (window.innerWidth < 768) {
+              closeSidebar();
+            }
+          }
+        });
+      });
+
+      // Закрываем боковую панель при клике на Esc
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && sidebar.classList.contains("open")) {
+          closeSidebar();
+        }
+      });
+
+      // Обновляем иконки после манипуляций с DOM
+      lucide.createIcons();
     </script>
   </body>
 </html>

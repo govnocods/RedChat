@@ -6,10 +6,12 @@ import (
 
 type Handlers struct {
 	UserService service.UserServiceI
+	MessageService service.MessageServiceI
 }
 
-func NewHandlers(userService service.UserServiceI) *Handlers {
+func NewHandlers(userService service.UserServiceI, messageService service.MessageServiceI) *Handlers {
 	return &Handlers{
 		UserService: userService,
+		MessageService: messageService, 
 	}
 }

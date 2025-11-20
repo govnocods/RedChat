@@ -11,11 +11,10 @@ import (
 var ConnStr string
 
 func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error load .env")
+	if err := godotenv.Load(); err != nil {
+		log.Println("Warning: .env not found, falling back to environment variables")
 	}
-
+	
 	ConnStr = fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("DB_HOST"),
