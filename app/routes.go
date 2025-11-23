@@ -10,7 +10,10 @@ func (a *App) routes() {
 	// Публичные маршруты (без аутентификации)
 	a.Router.HandleFunc("/api/register", a.Handlers.RegisterHandler)
 	a.Router.HandleFunc("/api/login", a.Handlers.AuthHandler)
-	a.Router.HandleFunc("/api/messages", a.Handlers.GetMessages)
+	a.Router.HandleFunc("/api/logout", a.Handlers.LogoutHandler)
+
+	messages := http.HandlerFunc(a.Handlers.GetMessages)
+	a.Router.Handle("/api/messages", a.Middlewares.APIAuthMiddleware(messages))
 
 	a.Router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./web/login.html")

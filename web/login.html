@@ -158,13 +158,18 @@
           });
 
           if (res.ok) {
-            // ✅ Успешный вход - сразу делаем редирект
-            // Cookie устанавливается браузером автоматически
-            window.location.href = "/";
+            // ✅ Успешный вход - куки уже установлены сервером
+            // Небольшая задержка для установки cookie браузером
+            setTimeout(() => {
+              window.location.replace("/");
+            }, 100);
           } else {
-            // ❌ Ошибка входа
+            // ❌ Ошибка входа (безопасное отображение)
             const text = await res.text();
-            errorText.textContent = text || "Ошибка входа";
+            // Экранируем HTML в сообщении об ошибке
+            const errorDiv = document.createElement("div");
+            errorDiv.textContent = text || "Ошибка входа";
+            errorText.textContent = errorDiv.textContent; // textContent автоматически экранирует
             errorBox.classList.remove("hidden");
           }
         } catch (err) {

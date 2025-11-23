@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/govnocods/RedChat/internal/logger"
@@ -55,6 +56,7 @@ func (c *Client) ReadPump() {
 
 		msg["username"] = c.Username
 		msg["sender_id"] = c.ID
+		msg["created_at"] = time.Now().Format(time.RFC3339)
 
 		finalMsg, err := json.Marshal(msg)
 		if err != nil {

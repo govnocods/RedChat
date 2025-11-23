@@ -3,6 +3,8 @@ package service
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/govnocods/RedChat/internal/repository"
 	"github.com/govnocods/RedChat/models"
@@ -12,6 +14,7 @@ import (
 type UserServiceI interface {
 	RegisterUser(username, password string) (*models.User, error)
 	Authenticate(username, password string) (*models.User, error)
+	ValidateUser(username, password string) error
 }
 
 type UserService struct {
@@ -61,4 +64,35 @@ func (s *UserService) Authenticate(username, password string) (*models.User, err
 	}
 
 	return user, nil
+}
+
+func (s *UserService) ValidateUser(username, password string) error {
+	trimmedUsername := strings.TrimSpace(username)
+	if trimmedUsername == "" {
+		return errors.New("имя пользователя не может быть пустым")
+	}
+
+	if strings.Contains(username, " ") {
+		return errors.New("имя пользователя не может содержать пробелы")
+	}
+
+	for _, char := range username {
+		isLetter := (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')
+		isDigit := char >= '0' && char <= '9'
+
+		if !isLetter && !isDigit {
+			return errors.New("имя пользователя может содержать только английские буквы и цифры")
+		}
+	}
+
+	usernameLen := utf8.RuneCountInString(username)
+	if usernameLen < 4 {
+		return errors.New("имя пользователя должно быть длиной не менее 4 символов")
+	}
+
+	if len(password) <= 8 {
+		return errors.New("пароль должен быть длиннее 8 символов")
+	}
+
+	return nil
 }

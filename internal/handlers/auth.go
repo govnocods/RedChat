@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,6 +10,7 @@ import (
 	"github.com/govnocods/RedChat/internal/auth"
 	"github.com/govnocods/RedChat/internal/logger"
 	"github.com/govnocods/RedChat/models"
+	"github.com/govnocods/RedChat/utils"
 )
 
 func (h *Handlers) RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,8 +21,13 @@ func (h *Handlers) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Username == "" || req.Password == "" {
-		http.Error(w, "Username and password are required", http.StatusBadRequest)
+	if err := h.UserService.ValidateUser(req.Username, req.Password); err != nil {
+		logger.Warn("Registration failed: validation error",
+			"username", req.Username,
+			"ip", r.RemoteAddr,
+			"error", err.Error(),
+		)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -34,14 +38,14 @@ func (h *Handlers) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 				"username", req.Username,
 				"ip", r.RemoteAddr,
 			)
-			http.Error(w, "User already exists", http.StatusConflict)
+			http.Error(w, "Пользователь уже существует", http.StatusConflict)
 			return
 		}
 		logger.WithError(err).
 			With("username", req.Username).
 			With("ip", r.RemoteAddr).
 			Error("Failed to register user")
-		http.Error(w, "Failed to register user", http.StatusInternalServerError)
+		http.Error(w, "Не удалось зарегистрировать пользователя", http.StatusInternalServerError)
 		return
 	}
 
@@ -51,9 +55,21 @@ func (h *Handlers) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		"ip", r.RemoteAddr,
 	)
 
+	token, err := auth.GenerateToken(user.Id, user.Username)
+	if err != nil {
+		logger.WithError(err).
+			With("user_id", user.Id).
+			With("username", user.Username).
+			Error("Failed to generate token")
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	utils.SetCookie(w, token)
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	json.NewEncoder(w).Encode(map[string]any{
 		"message":  "User registered successfully",
 		"username": user.Username,
 		"id":       user.Id,
@@ -70,7 +86,7 @@ func (h *Handlers) AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.UserService.Authenticate(req.Username, req.Password)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) || strings.Contains(err.Error(), "invalid credentials") {
+		if strings.Contains(err.Error(), "invalid credentials") {
 			logger.Warn("Authentication failed",
 				"username", req.Username,
 				"ip", r.RemoteAddr,
@@ -104,15 +120,27 @@ func (h *Handlers) AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "jwt",
-		Value:    token,
-		Path:     "/",
-		HttpOnly: true,
-		Expires:  time.Now().Add(time.Hour * 24),
-	})
+	utils.SetCookie(w, token)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, `{"message": "token generated", "username": "%s", "token": "%s"}`, user.Username, token)
+}
+
+func (h *Handlers) LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]any{
+		"message": "Logged out successfully",
+		"success": true,
+	})
 }

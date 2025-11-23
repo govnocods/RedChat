@@ -150,6 +150,7 @@
 
           const res = await fetch("/api/register", {
             method: "POST",
+            credentials: "include", // ОБЯЗАТЕЛЬНО для cookie
             headers: {
               "Content-Type": "application/json",
             },
@@ -157,12 +158,22 @@
           });
 
           if (res.ok) {
-            // ✅ Успешная регистрация
-            window.location.href = "/login";
+            // ✅ Успешная регистрация - куки уже установлены сервером
+            // HttpOnly cookie устанавливается браузером автоматически из заголовков ответа
+            // Нельзя проверить через document.cookie (HttpOnly защита)
+            // Увеличиваем задержку для гарантированной установки cookie браузером
+            // Cookie устанавливается сразу при получении ответа, но браузеру нужно время
+            setTimeout(() => {
+              // Редирект в чат (не в login!)
+              window.location.replace("/");
+            }, 800);
           } else {
-            // ❌ Ошибка регистрации
+            // ❌ Ошибка регистрации (безопасное отображение)
             const text = await res.text();
-            errorText.textContent = text || "Ошибка регистрации";
+            // Экранируем HTML в сообщении об ошибке
+            const errorDiv = document.createElement("div");
+            errorDiv.textContent = text || "Ошибка регистрации";
+            errorText.textContent = errorDiv.textContent; // textContent автоматически экранирует
             errorBox.classList.remove("hidden");
           }
         } catch (err) {
